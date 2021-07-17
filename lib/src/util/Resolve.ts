@@ -195,10 +195,10 @@ class Resolve {
       guildResolvable.emojis.set(remoji.id, remoji)
     }
 
-    for (const member of members) {
-      const rmember = this.resolveMember(member, guildResolvable.id)
-      guildResolvable.members.set(rmember.id, rmember)
-    }
+    /*for (const member of members) {
+      const rmember = this.resolveMember(member, id)
+      guildResolvable.members.set(rmember.user.id, rmember)
+    }*/
 
     return guildResolvable
   }

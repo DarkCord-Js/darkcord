@@ -149,8 +149,8 @@ class Client extends EventEmitter {
     }
 
     /** Load commands */
-    async commandLoader (path?: string) {
-      return await CommandLoader(this, path)
+    commandLoader (path?: string) {
+      return CommandLoader(this, path)
     }
 
     /** Load Events */
