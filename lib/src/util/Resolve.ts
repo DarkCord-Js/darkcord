@@ -141,7 +141,8 @@ class Resolve {
       public_updates_channel_id,
       preferred_locale,
       explicit_content_filter,
-      nsfw_level
+      nsfw_level,
+      members
     } = guild
 
     const guildResolvable = new Guild(
@@ -184,8 +185,20 @@ class Resolve {
       approximate_presence_count
     )
 
-    guildResolvable.roles = roles
-    guildResolvable.emojis = emojis
+    for (const role of roles) {
+      const rrole = this.resolveRole(role)
+      guildResolvable.roles.set(rrole.id, role)
+    }
+
+    for (const emoji of emojis) {
+      const remoji = this.resolveEmoji(emoji)
+      guildResolvable.emojis.set(remoji.id, remoji)
+    }
+
+    for (const member of members) {
+      const rmember = this.resolveMember(member, guildResolvable.id)
+      guildResolvable.members.set(rmember.id, rmember)
+    }
 
     return guildResolvable
   }
