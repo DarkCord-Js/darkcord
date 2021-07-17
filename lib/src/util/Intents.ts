@@ -1,4 +1,4 @@
-export default {
+const Intents = {
     GUILDS: 1 << 0,
     GUILD_MEMBERS: 1 << 1,
     GUILD_BANS: 1 << 2,
@@ -14,4 +14,9 @@ export default {
     DIRECT_MESSAGES: 1 << 12,
     DIRECT_MESSAGE_REACTIONS: 1 << 13,
     DIRECT_MESSAGE_TYPING: 1 << 14,
-}
+    ALL: 0
+  }
+  
+  Intents.ALL = Object.values(Intents).reduce((a, p) => a | p, 0)
+  
+  export default Intents
