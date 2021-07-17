@@ -1,0 +1,8 @@
+# Files
+**/*.test.ts
+import_map.json
+
+# Folders
+node_modules
+dist
+darkcord

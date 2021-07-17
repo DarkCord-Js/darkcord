@@ -1,0 +1,15 @@
+{
+  "$schema": "https://deno.land/x/denon@2.4.7/schema.json",
+  "scripts": {
+    "start": {
+      "cmd": "deno run index.ts",
+      "desc": "desc foda",
+      "import-map": "import_map.json",
+      "unstable": true,
+      "allow": [
+        "net",
+        "read"
+      ]
+    }
+  }
+}
