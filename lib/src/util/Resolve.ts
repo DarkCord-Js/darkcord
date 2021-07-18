@@ -185,14 +185,18 @@ class Resolve {
       approximate_presence_count
     )
 
-    for (const role of roles) {
-      const rrole = this.resolveRole(role)
-      guildResolvable.roles.set(rrole.id, role)
+    if (roles) {
+      for (const role of roles) {
+        const rrole = this.resolveRole(role)
+        guildResolvable.roles.set(rrole.id, role)
+      }
     }
 
-    for (const emoji of emojis) {
-      const remoji = this.resolveEmoji(emoji)
-      guildResolvable.emojis.set(remoji.id, remoji)
+    if (emojis) {
+      for (const emoji of emojis) {
+        const remoji = this.resolveEmoji(emoji)
+        guildResolvable.emojis.set(remoji.id, remoji)
+      }
     }
 
     /*for (const member of members) {
@@ -326,17 +330,15 @@ class Resolve {
 
     if (!guild) {
       guild = await client.rest.fetch.guild(guild_id)
+      guild = this.resolveGuild(guild)
     }
-
-    guild = this.resolveGuild(guild)
 
     this.cache.manage('guilds', guild.id, guild)
 
     if (!user) {
       user = await client.rest.fetch.user(author?.id)
+      user = this.resolveUser(user);
     }
-
-    user = this.resolveUser(user)
 
     this.cache.manage('users', user.id, user)
 
