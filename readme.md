@@ -16,6 +16,6 @@ client.on('message', (message) => {
 })
 
 (async () => {
-    await client.login() // => Promise<Bot>
+    await client.run() // => Promise<Bot>
 })()
 ```
