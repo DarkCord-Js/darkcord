@@ -1,12 +1,13 @@
-import type Client from '../../Client'
+import type Bot from '../../Bot'
 import type Guild from '../Guild'
 import type { ChannelTypeDef } from '../../types/Types'
 import BaseChannel from './BaseChannel'
+import { EndPoints } from '../../constants/Constants'
 
 class GuildChannel extends BaseChannel {
   constructor (
     _id: string,
-    _client: Client,
+    _client: Bot,
     _type: ChannelTypeDef,
     _name: string,
         private _lastMessageId: string,
@@ -53,6 +54,24 @@ class GuildChannel extends BaseChannel {
 
   public get lastMessageId (): string {
     return this._lastMessageId
+  }
+
+  public get rateLimitPerUser (): number {
+    return this._rateLimitPerUser
+  }
+
+  set rateLimitPerUser (rate: number) {
+    this._rateLimitPerUser = rate
+  }
+
+  async delete (timeout?: { timeout: number}) {
+    if ('timeout' in timeout!) {
+      setTimeout(() => {
+        this.delete()
+      }, timeout.timeout)
+    } else {
+      await this.client.requestHandler('DELETE', `${EndPoints.channels}/${this.id}`)
+    }
   }
 }
 

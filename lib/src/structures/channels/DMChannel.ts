@@ -1,6 +1,6 @@
 import BaseChannel from './BaseChannel'
 import type { ChannelTypeDef, MessageContent } from '../../types/Types'
-import type Client from '../../Client'
+import type Bot from '../../Bot'
 import Collection from '../../collection/Collection'
 import type Message from '../Message'
 import { MessageOptions } from '../../types/Interfaces'
@@ -12,7 +12,7 @@ class DMChannel extends BaseChannel {
     private resolve: Resolve;
     constructor (
       _id: string,
-      _client: Client,
+      _client: Bot,
       _type: ChannelTypeDef,
       _lastMessageId: string,
       _lastPinTimestamp: Date,
@@ -28,7 +28,7 @@ class DMChannel extends BaseChannel {
       return this._messages
     }
 
-    async send (content: MessageContent) {
+    async sendMessage (content: MessageContent) {
       if (typeof content === 'string') {
         const body: MessageOptions = { content }
         const res = await this.client.rest.createMessage(body, this.id)

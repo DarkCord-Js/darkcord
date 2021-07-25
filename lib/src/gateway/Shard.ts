@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import Client from '../Client'
+import Bot from '../Bot'
 import WebSocket from 'ws'
 import { Constants } from '../constants/Constants'
 import { HeartBeat, identify, payload } from '../constants/PayLoads'
@@ -8,7 +8,7 @@ import { resolveEvents } from '../util/Resolve'
 import EventHandler from '../handler/EventHandler'
 import { EventResolvable } from '../types/Types'
 import Erlpack from 'erlpack'
-import ClientUser from '../ClientUser'
+import BotUser from '../BotUser'
 
 class Shard extends EventEmitter {
   private ws: WebSocket | null
@@ -20,7 +20,7 @@ class Shard extends EventEmitter {
   private lastHeartBeatSent: number = 0;
   constructor (
       public id: string,
-      private client: Client
+      private client: Bot
   ) {
     super()
 
@@ -45,7 +45,7 @@ class Shard extends EventEmitter {
 
         if (d?.user) {
           const clientUser = d.user
-          this.client.user = new ClientUser(
+          this.client.user = new BotUser(
             clientUser.id,
             clientUser.username,
             clientUser.discriminator,
@@ -116,9 +116,8 @@ class Shard extends EventEmitter {
   }
 
   private async heartbeat (ms: number) {
-    this.lastHeartBeatSent = Date.now()
-
     return setInterval(() => {
+      this.lastHeartBeatSent = Date.now()
       this.ws?.send(Erlpack.pack(HeartBeat))
       this.client.emit(Events.DEBUG, `HeartBeat Sent:\n${JSON.stringify({
         lastHeartBeatReceived: this.lastHeartBeatReceived,

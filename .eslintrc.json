@@ -1,0 +1,29 @@
+{
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es2021": true
+    },
+    "extends": [
+        "standard"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 12
+    },
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "rules": {
+        "no-unused-vars": "off",
+        "camelcase": "off",
+        "accessor-pairs": "off",
+        "new-cap": "off",
+        "no-case-declarations": "off",
+        "no-const-assign": "off",
+        "no-useless-constructor": "off",
+        "no-unused-expressions": "off",
+        "no-dupe-class-members": "off",
+        "no-redeclare": "off"
+    }
+}

@@ -1,9 +1,9 @@
-import Client from '../../Client'
+import Bot from '../../Bot'
 import { ChannelTypeDef } from '../../types/Types'
 
 class BaseChannel {
   constructor (
-        protected _client: Client,
+        protected _client: Bot,
         private _id: string,
         private _name: string,
         private _type: ChannelTypeDef
@@ -15,7 +15,7 @@ class BaseChannel {
     return this._name
   }
 
-  public get client (): Client {
+  public get client (): Bot {
     return this._client
   }
 

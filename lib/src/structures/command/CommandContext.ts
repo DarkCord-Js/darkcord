@@ -1,11 +1,11 @@
-import Client from '../../Client'
+import Bot from '../../Bot'
 import { MessageContent } from '../../types/Types'
 import type Message from '../Message'
 
 class CommandContext {
-  constructor (private _message: Message, private _client?: Client) {}
+  constructor (private _message: Message, private _client?: Bot) {}
 
-  /** DarkCord Client */
+  /** DarkCord Bot */
   public get client () {
     return this._client
   }
@@ -37,7 +37,7 @@ class CommandContext {
 
   /** Send message to command channel */
   public send (content: MessageContent) {
-    return this.message.channel.send(content)
+    return this.message.channel.sendMessage(content)
   }
 }
 

@@ -1,4 +1,4 @@
-import Client from '../Client'
+import Bot from '../Bot'
 import { payload } from '../constants/PayLoads'
 import Resolve from '../util/Resolve'
 import { Events } from '../constants/Events'
@@ -6,7 +6,7 @@ import { Events } from '../constants/Events'
 class EventHandler {
   private resolve: Resolve;
   private readonly payload: any;
-  constructor (private client: Client, payload: payload) {
+  constructor (private client: Bot, payload: payload) {
     this.resolve = new Resolve(client)
 
     const { d: event_payload } = payload
@@ -51,6 +51,15 @@ class EventHandler {
     this.client.emit(Events.READY)
   }
 
+  hello () {
+    this.client.emit(Events.HELLO, this.payload.heartbeat_interval)
+  }
+
+  async interaction () {
+    const interaction = await this.resolve.resolveInteraction(this.payload)
+    this.client.emit(Events.INTERACTION_CREATE, interaction)
+  }
+
   async reaction () {
     const reaction = await this.resolve.resolveReaction(this.payload)
     this.client.emit(Events.MESSAGE_REACTION_ADD, reaction)
@@ -59,6 +68,11 @@ class EventHandler {
   async reactionRemove () {
     const reaction = await this.resolve.resolveReaction(this.payload)
     this.client.emit(Events.MESSAGE_REACTION_REMOVE, reaction)
+  }
+
+  async messageUpdate () {
+    const message = await this.resolve.resolveMessage(this.payload)
+    this.client.emit(Events.UPDATE_MESSAGE, message)
   }
 }
 

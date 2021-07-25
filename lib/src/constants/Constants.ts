@@ -12,6 +12,11 @@ export enum EndPoints {
     members = 'members',
     reactions = 'reactions',
     pins = 'pins',
+    emojis = 'emojis',
+    followers = 'followers',
+    thread_members = 'thread-members',
+    interactions = 'interactions',
+    callback = 'callback'
 }
 
 export enum StatusCode {

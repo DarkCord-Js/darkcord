@@ -2,7 +2,7 @@ import { MessageOptions, TextBasedChannel } from '../../types/Interfaces'
 import GuildChannel from './GuildChannel'
 import type Guild from '../Guild'
 import type { ChannelTypeDef, MessageContent } from '../../types/Types'
-import type Client from '../../Client'
+import type Bot from '../../Bot'
 import Embed from '../Embed'
 import Resolve from '../../util/Resolve'
 import Collection from '../../collection/Collection'
@@ -11,10 +11,10 @@ import Message from '../Message'
 class TextChannel extends GuildChannel implements TextBasedChannel {
     private _messages: Collection<string, Message> = new Collection();
     private resolve: Resolve;
-    _client: Client
+    _client: Bot
     constructor (
       _id: string,
-      _client: Client,
+      _client: Bot,
       _type: ChannelTypeDef,
       _lastMessageId: string,
       _lastPinTimestamp: Date,
@@ -51,11 +51,11 @@ class TextChannel extends GuildChannel implements TextBasedChannel {
       return this._messages
     }
 
-    public get client (): Client {
+    public get client (): Bot {
       return this._client
     }
 
-    public async send (content: MessageContent) {
+    public async sendMessage (content: MessageContent) {
       if (typeof content === 'string') {
         const body: MessageOptions = { content }
         const res = await this.client.rest.createMessage(body, this.id)

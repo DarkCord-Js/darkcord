@@ -1,13 +1,13 @@
 import fs from 'fs'
 import path from 'path'
-import type Client from '../Client'
+import type Bot from '../CommandBot'
 import isClass from '../util/isClass'
 import isConstructor from '../util/isConstructor'
 
 const commandsLoaded: string[] = []
 const eventsLoaded: string[] = []
 
-export async function CommandLoader (client: Client, _path: string = './darkcord/commands') {
+export async function CommandLoader (client: Bot, _path: string = './darkcord/commands') {
   const dir = path.join(path.dirname(<string>require.main?.filename), _path)
 
   fs.readdir(path.resolve(dir), (err, __) => {
@@ -53,7 +53,7 @@ export async function CommandLoader (client: Client, _path: string = './darkcord
   return r
 }
 
-function LoadCommando (client: Client, _dir: string, file: string) {
+function LoadCommando (client: Bot, _dir: string, file: string) {
   let commando = require(_dir)
 
   if (commando.default) {
@@ -87,7 +87,7 @@ function LoadCommando (client: Client, _dir: string, file: string) {
   }
 }
 
-export function EventLoader (client: Client, _path: string = './darkcord/events') {
+export function EventLoader (client: Bot, _path: string = './darkcord/events') {
   const dir = path.join(path.dirname(<string>require.main?.filename), _path)
 
   fs.readdir(path.resolve(dir), (err, __) => {
@@ -133,7 +133,7 @@ export function EventLoader (client: Client, _path: string = './darkcord/events'
   return r
 }
 
-function LoadEvent (client: Client, _dir: string, file: string) {
+function LoadEvent (client: Bot, _dir: string, file: string) {
   let event = require(_dir)
 
   if (event.default) {

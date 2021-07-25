@@ -1,5 +1,8 @@
 export const headers = {
   'Content-Type': 'application/json',
+  'User-Agent': `DarkCord(${require('../../../../package.json').version}) Bot `,
+  'Accept-Encoding': 'gzip,deflate',
+  'X-RateLimit-Precision': 'millisecond',
   Authorization: ''
 }
 

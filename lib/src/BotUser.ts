@@ -1,6 +1,6 @@
 import { ImageFormat } from './types/Types'
 
-class ClientUser {
+class BotUser {
   constructor (
         private _id: string,
         private _username: string,
@@ -47,4 +47,4 @@ class ClientUser {
   }
 }
 
-export default ClientUser
+export default BotUser

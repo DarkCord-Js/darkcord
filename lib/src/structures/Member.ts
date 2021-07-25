@@ -1,4 +1,4 @@
-import Client from '../Client'
+import Bot from '../Bot'
 import { ImageFormat } from '../types/Types'
 import User from './User'
 import Format from '../util/DFormats'
@@ -6,7 +6,7 @@ import Format from '../util/DFormats'
 class Member {
   constructor (
         private _id: string,
-        private client: Client,
+        private client: Bot,
         private _user: User,
         private _nickname: string,
         private _joinedDate: Date,

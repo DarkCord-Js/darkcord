@@ -1,11 +1,11 @@
 import EventEmitter from 'events'
-import Client from '../Client'
+import Bot from '../Bot'
 import ShardManager from '../gateway/ShardManager'
 
 /** DarkCord WebSocket Manager */
 class WsManager extends EventEmitter {
     private shards: ShardManager;
-    constructor (private client: Client) {
+    constructor (private client: Bot) {
       super()
 
       this.shards = new ShardManager(this.client)

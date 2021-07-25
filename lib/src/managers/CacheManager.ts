@@ -1,8 +1,8 @@
-import type Client from '../../Client'
-import { CacheTypes } from '../../types/Types'
+import type Bot from '../Bot'
+import { CacheTypes } from '../types/Types'
 
 class CacheManager {
-  constructor (public client: Client) {}
+  constructor (public client: Bot) {}
 
   manage (type: CacheTypes, key: string, value: any) {
     if (this.client.options.cache[type]) {

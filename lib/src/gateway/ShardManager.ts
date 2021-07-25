@@ -1,10 +1,10 @@
-import Client from '../Client'
+import Bot from '../Bot'
 import Collection from '../collection/Collection'
 import Shard from './Shard'
 import { Events } from '../constants/Events'
 
 class ShardManager extends Collection<string, Shard> {
-  constructor (private client: Client) {
+  constructor (private client: Bot) {
     super()
   }
 

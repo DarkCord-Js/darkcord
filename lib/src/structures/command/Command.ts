@@ -1,11 +1,11 @@
-import Client from '../../Client'
-import { CommandExecute, CommandOptions } from '../../types/Interfaces'
+import Bot from '../../Bot'
+import { CommandOptions } from '../../types/Interfaces'
 import Message from '../Message'
 import CommandContext from './CommandContext'
 
 class Command {
   options: CommandOptions
-  static createContext: (obj: { message: Message; client?: Client | undefined }) => CommandContext
+  static createContext: (obj: { message: Message; client?: Bot | undefined }) => CommandContext
   constructor (CommandOptions: CommandOptions) {
     /** Command Options */
     this.options = {
@@ -29,7 +29,7 @@ class Command {
 
 Command.createContext = (obj: {
   message: Message,
-  client?: Client,
+  client?: Bot,
 }) => {
   return new CommandContext(obj.message, obj.client)
 }

@@ -3,7 +3,7 @@ import type Role from './Role'
 import type Member from './Member'
 import type Emoji from './Emoji'
 import GuildChannel from './channels/GuildChannel'
-import type Client from '../Client'
+import type Bot from '../Bot'
 import Resolve from '../util/Resolve'
 
 class Guild {
@@ -14,7 +14,7 @@ class Guild {
 
     constructor (
         private _id: string,
-        private _client: Client,
+        private _client: Bot,
         private _name: string,
         private _icon: string,
         private _description: string,
@@ -185,7 +185,7 @@ class Guild {
       return this._memberCount
     }
 
-    public get client (): Client {
+    public get client (): Bot {
       return this._client
     }
 

@@ -1,22 +1,26 @@
-import type Client from '../Client'
-import type { API_Member, API_Role, API_User } from '../types/Interfaces'
+import type Bot from '../Bot'
+import type { API_Member, API_Role, API_User, Partial_Emoji } from '../types/Interfaces'
 import User from '../structures/User'
 import Member from '../structures/Member'
 import Role from '../structures/Role'
 import Guild from '../structures/Guild'
 import BaseChannel from '../structures/channels/BaseChannel'
-import { ChannelType, ChannelTypeDef, EventNoResolvable } from '../types/Types'
+import { ChannelType, ChannelTypeDef, EventNoResolvable, InteractionCallTypeDef } from '../types/Types'
 import Message from '../structures/Message'
 import TextChannel from '../structures/channels/TextChannel'
 import { Events } from '../constants/Events'
-import CacheManager from '../structures/cache/CacheManager'
+import CacheManager from '../managers/CacheManager'
 import Emoji from '../structures/Emoji'
 import Reaction from '../structures/Reaction'
+import ThreadChannel from '../structures/channels/ThreadChannel'
+import Interaction from '../structures/Interaction'
+import CategoryChannel from '../structures/channels/CategoryChannel'
+import parseEmoji from './ParseEmoji'
 
 class Resolve {
   private cache: CacheManager;
   constructor (
-        private client: Client
+        private client: Bot
   ) {
     this.cache = new CacheManager(this.client)
     return this
@@ -199,10 +203,10 @@ class Resolve {
       }
     }
 
-    /*for (const member of members) {
+    /* for (const member of members) {
       const rmember = this.resolveMember(member, id)
       guildResolvable.members.set(rmember.user.id, rmember)
-    }*/
+    } */
 
     return guildResolvable
   }
@@ -228,6 +232,8 @@ class Resolve {
 
     if (!guild) {
       guild = await client.rest.fetch.guild(guild_id)
+      guild = this.resolveGuild(guild)
+      this.cache.manage('guilds', guild.id, guild)
     }
 
     return new TextChannel(
@@ -244,6 +250,49 @@ class Resolve {
       permission_overwrites,
       nsfw,
       rate_limit_per_user
+    )
+  }
+
+  async resolveThreadChannel (channel: any) {
+    const {
+      id,
+      type,
+      name,
+      last_message_id,
+      last_pin_timestamp,
+      position,
+      parent_id,
+      topic,
+      guild_id,
+      permission_overwrites,
+      nsfw,
+      rate_limit_per_user,
+      thread_metadata
+    } = channel
+
+    let guild: Guild | any = this.client.guilds.get(guild_id)
+
+    if (!guild) {
+      guild = await this.client.rest.fetch.guild(guild_id)
+      guild = this.resolveGuild(guild)
+      this.cache.manage('guilds', guild.id, guild)
+    }
+
+    return new ThreadChannel(
+      id,
+      this.client,
+      type,
+      name,
+      last_message_id,
+      last_pin_timestamp,
+      position,
+      parent_id,
+      topic,
+      guild,
+      permission_overwrites,
+      nsfw,
+      rate_limit_per_user,
+      thread_metadata
     )
   }
 
@@ -297,6 +346,151 @@ class Resolve {
     )
   }
 
+  async resolveCategoryChannel (channel: any) {
+    const {
+      id,
+      type,
+      name,
+      last_message_id,
+      last_pin_timestamp,
+      position,
+      parent_id,
+      topic,
+      guild_id,
+      permission_overwrites,
+      nsfw,
+      rate_limit_per_user
+    } = channel
+
+    let guild: Guild | any = this.client.guilds.get(guild_id)
+
+    if (!guild) {
+      guild = await this.client.rest.fetch.guild(guild_id)
+      guild = this.resolveGuild(guild)
+      this.cache.manage('guilds', guild.id, guild)
+    }
+
+    return new CategoryChannel(
+      id,
+      this.client,
+      type,
+      name,
+      last_message_id,
+      last_pin_timestamp,
+      position,
+      parent_id,
+      topic,
+      guild,
+      permission_overwrites,
+      nsfw,
+      rate_limit_per_user
+    )
+  }
+
+  async resolveNewsChannel (channel: any) {
+    const {
+      id,
+      type,
+      name,
+      last_message_id,
+      last_pin_timestamp,
+      position,
+      parent_id,
+      topic,
+      guild_id,
+      permission_overwrites,
+      nsfw,
+      rate_limit_per_user
+    } = channel
+
+    let guild: Guild | any = this.client.guilds.get(guild_id)
+
+    if (!guild) {
+      guild = await this.client.rest.fetch.guild(guild_id)
+      guild = this.resolveGuild(guild)
+      this.cache.manage('guilds', guild.id, guild)
+    }
+
+    return new TextChannel(
+      id,
+      this.client,
+      type,
+      last_message_id,
+      last_pin_timestamp,
+      name,
+      position,
+      parent_id,
+      topic,
+      guild,
+      permission_overwrites,
+      nsfw,
+      rate_limit_per_user
+    )
+  }
+
+  async resolveChannel (channel: any) {
+    switch (channel.type) {
+      case 0:
+        return await this.resolveTextChannel(channel)
+      case 1:
+        return await this.resolveTextChannel(channel)
+      case 2:
+        return null
+      case 3:
+        return await this.resolveTextChannel(channel)
+      case 4:
+        return await this.resolveCategoryChannel(channel)
+      case 5:
+        return await this.resolveNewsChannel(channel)
+      default:
+        return null
+    }
+  }
+
+  async resolveInteraction (interaction: any) {
+    const { guild_id } = interaction
+
+    let guild = this.client.guilds.get(guild_id)
+
+    if (!guild) {
+      guild = await this.client.rest.fetch.guild(guild_id)
+      guild = this.resolveGuild(guild)
+      this.cache.manage('guilds', guild_id, guild)
+    }
+
+    const channel = await this.resolveChannel(await this.client.rest.fetch.channel(interaction.channel_id))
+
+    let member
+    if ('member' in interaction) {
+      member = await this.resolveMember(interaction.member, guild.id)
+    }
+
+    let author
+    if ('user' in interaction) {
+      author = await this.resolveUser(interaction.user)
+    }
+
+    let message
+    if ('message' in interaction) {
+      message = await this.resolveMessage(interaction.message)
+    }
+
+    return new Interaction(
+      this.client,
+      interaction.token,
+      interaction.version,
+      interaction.id,
+      interaction.application_id,
+      interaction.type,
+      guild,
+      <any>channel,
+      interaction.data,
+      <any>member,
+      <any>author,
+      <any>message
+    )
+  }
+
   async resolveMessage (message: any) {
     const client = this.client
     const {
@@ -337,7 +531,7 @@ class Resolve {
 
     if (!user) {
       user = await client.rest.fetch.user(author?.id)
-      user = this.resolveUser(user);
+      user = this.resolveUser(user)
     }
 
     this.cache.manage('users', user.id, user)
@@ -357,7 +551,7 @@ class Resolve {
 
   resolveMessageInstance (
     message: any,
-    client: Client,
+    client: Bot,
     channel: TextChannel,
     guild: Guild,
     user: User,
@@ -384,25 +578,76 @@ class Resolve {
 }
 
 export function getChannelType (type: number): ChannelType {
-  if (type === 0) return ChannelType.TEXT
-  if (type === 1) return ChannelType.DM
-  if (type === 2) return ChannelType.VOICE
-  if (type === 3) return ChannelType.DM
-  if (type === 4) return ChannelType.CATEGORY
-  if (type === 5) return ChannelType.NEWS
-  if (type === 6) return ChannelType.STORE
-  return ChannelType.UNKNOWN
+  switch (type) {
+    case 0:
+      return ChannelType.TEXT
+    case 1:
+      return ChannelType.DM
+    case 2:
+      return ChannelType.VOICE
+    case 3:
+      return ChannelType.DM
+    case 4:
+      return ChannelType.CATEGORY
+    case 5:
+      return ChannelType.NEWS
+    case 6:
+      return ChannelType.STORE
+    default:
+      return ChannelType.UNKNOWN
+  }
 }
 
 export function getChannelTypeDef (type: number) {
-  if (type === 0) return ChannelTypeDef.TEXT
-  if (type === 1) return ChannelTypeDef.DM
-  if (type === 2) return ChannelTypeDef.VOICE
-  if (type === 3) return ChannelTypeDef.DM
-  if (type === 4) return ChannelTypeDef.CATEGORY
-  if (type === 5) return ChannelTypeDef.NEWS
-  if (type === 6) return ChannelTypeDef.STORE
-  return ChannelTypeDef.UNKNOWN
+  switch (type) {
+    case 0:
+      return ChannelTypeDef.TEXT
+    case 1:
+      return ChannelTypeDef.DM
+    case 2:
+      return ChannelTypeDef.VOICE
+    case 3:
+      return ChannelTypeDef.DM
+    case 4:
+      return ChannelTypeDef.CATEGORY
+    case 5:
+      return ChannelTypeDef.NEWS
+    case 6:
+      return ChannelTypeDef.STORE
+    default:
+      return ChannelTypeDef.UNKNOWN
+  }
+}
+
+export function getInteractionType (type: InteractionCallTypeDef) {
+  switch (type) {
+    case InteractionCallTypeDef.PONG:
+      return 1
+    case InteractionCallTypeDef.CHANNEL_MESSAGE_WITH_SOURCE:
+      return 4
+    case InteractionCallTypeDef.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE:
+      return 5
+    case InteractionCallTypeDef.DEFERRED_UPDATE_MESSAGE:
+      return 6
+    case InteractionCallTypeDef.UPDATE_MESSAGE:
+      return 7
+  }
+}
+
+export function resolveParseEmoji (emoji: string | Partial_Emoji) {
+  if (typeof emoji === 'string') {
+    return (/^\d{17,19}$/).test(emoji) ? { name: null, id: emoji } : parseEmoji(emoji)
+  }
+
+  const { name, id, animated } = emoji
+
+  if (!name && !id) return null
+
+  return {
+    name,
+    id,
+    animated
+  }
 }
 
 export function resolveEvents (event: string): Events {

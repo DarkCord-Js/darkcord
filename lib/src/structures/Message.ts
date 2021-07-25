@@ -1,5 +1,5 @@
 import TextChannel from './channels/TextChannel'
-import Client from '../Client'
+import Bot from '../Bot'
 import Guild from './Guild'
 import User from './User'
 import { MessageOptions } from '../types/Interfaces'
@@ -9,7 +9,7 @@ import type Member from './Member'
 class Message {
     private _embeds: Embed[] = [];
     constructor (
-        private _client: Client,
+        private _client: Bot,
         private _id: string,
         private _channel: TextChannel,
         private _guild: Guild | null,
@@ -27,7 +27,7 @@ class Message {
       return this
     }
 
-    public get client (): Client {
+    public get client (): Bot {
       return this._client
     }
 
