@@ -4,7 +4,7 @@ import TextChannel from './TextChannel'
 
 class NewsChannel extends TextChannel {
   async addFollower (channel: GuildChannel | TextChannel, reason?: string) {
-    return this.client.requestHandler('POST', `${EndPoints.channels}/${channel.id}/${EndPoints.followers}`, {
+    return this.bot.requestHandler('POST', `${EndPoints.channels}/${channel.id}/${EndPoints.followers}`, {
       webhook_channel_id: channel.id,
       reason
     })

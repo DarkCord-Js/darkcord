@@ -7,7 +7,7 @@ import { EndPoints } from '../../constants/Constants'
 class GuildChannel extends BaseChannel {
   constructor (
     _id: string,
-    _client: Bot,
+    _bot: Bot,
     _type: ChannelTypeDef,
     _name: string,
         private _lastMessageId: string,
@@ -20,7 +20,7 @@ class GuildChannel extends BaseChannel {
         private _nsfw: boolean,
         private _rateLimitPerUser: number
   ) {
-    super(_client, _id, _name, _type)
+    super(_bot, _id, _name, _type)
     return this
   }
 
@@ -70,7 +70,7 @@ class GuildChannel extends BaseChannel {
         this.delete()
       }, timeout.timeout)
     } else {
-      await this.client.requestHandler('DELETE', `${EndPoints.channels}/${this.id}`)
+      await this.bot.requestHandler('DELETE', `${EndPoints.channels}/${this.id}`)
     }
   }
 }

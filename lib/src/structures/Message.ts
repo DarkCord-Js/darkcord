@@ -5,11 +5,12 @@ import User from './User'
 import { MessageOptions } from '../types/Interfaces'
 import Embed from './Embed'
 import type Member from './Member'
+import { MessageContent } from '../types/Types'
 
 class Message {
     private _embeds: Embed[] = [];
     constructor (
-        private _client: Bot,
+        private _bot: Bot,
         private _id: string,
         private _channel: TextChannel,
         private _guild: Guild | null,
@@ -27,8 +28,8 @@ class Message {
       return this
     }
 
-    public get client (): Bot {
-      return this._client
+    public get bot (): Bot {
+      return this._bot
     }
 
     public get id (): string {
@@ -87,13 +88,55 @@ class Message {
       return this._editedAt ? this._editedAt : null
     }
 
+    public async reply (content: MessageContent, allowMention: boolean = false) {
+      if (typeof content === 'string') {
+        return await this.channel.sendMessage({
+          content,
+          messageReference: {
+            channelId: this.channel.id,
+            messageId: this.id
+          },
+          allowedMentions: {
+            repliedUser: allowMention
+          }
+        })
+      }
+
+      if (content instanceof Embed) {
+        return await this.channel.sendMessage({
+          embeds: [content],
+          messageReference: {
+            channelId: this.channel.id,
+            messageId: this.id
+          },
+          allowedMentions: {
+            repliedUser: allowMention
+          }
+        })
+      }
+
+      content = <MessageOptions>content
+      if (!content.messageReference) {
+        content.messageReference = {
+          channelId: this.channel.id,
+          messageId: this.id
+        }
+      }
+      if (!content.allowedMentions) {
+        content.allowedMentions = {
+          repliedUser: allowMention
+        }
+      }
+      return await this.channel.sendMessage(content)
+    }
+
     public async edit (newContent: string | Embed | MessageOptions) {
       if (typeof newContent === 'string') {
-        return this.client.rest.editMessage({ content: newContent }, this.channel.id, this.id)
+        return this.bot.rest.editMessage({ content: newContent }, this.channel.id, this.id)
       } else if (newContent instanceof Embed) {
-        return this.client.rest.editMessage({ embeds: [newContent] }, this.channel.id, this.id)
+        return this.bot.rest.editMessage({ embeds: [newContent] }, this.channel.id, this.id)
       } else {
-        return this.client.rest.editMessage(
+        return this.bot.rest.editMessage(
           {
             content: newContent.content,
             embeds: newContent.embeds,

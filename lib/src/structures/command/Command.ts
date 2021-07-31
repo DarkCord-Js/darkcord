@@ -5,7 +5,7 @@ import CommandContext from './CommandContext'
 
 class Command {
   options: CommandOptions
-  static createContext: (obj: { message: Message; client?: Bot | undefined }) => CommandContext
+  static createContext: (obj: { message: Message; bot?: Bot | undefined }) => CommandContext
   constructor (CommandOptions: CommandOptions) {
     /** Command Options */
     this.options = {
@@ -23,15 +23,15 @@ class Command {
   }
 
   execute (ctx: CommandContext, args?: string[]) {
-    ctx.client?.emit('command', this.options)
+    ctx.bot?.emit('command', this.options)
   }
 }
 
 Command.createContext = (obj: {
   message: Message,
-  client?: Bot,
+  bot?: Bot,
 }) => {
-  return new CommandContext(obj.message, obj.client)
+  return new CommandContext(obj.message, obj.bot)
 }
 
 export default Command

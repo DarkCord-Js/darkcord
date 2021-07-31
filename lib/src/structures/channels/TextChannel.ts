@@ -1,4 +1,4 @@
-import { MessageOptions, TextBasedChannel } from '../../types/Interfaces'
+import { CreateInviteOptions, MessageOptions, TextBasedChannel } from '../../types/Interfaces'
 import GuildChannel from './GuildChannel'
 import type Guild from '../Guild'
 import type { ChannelTypeDef, MessageContent } from '../../types/Types'
@@ -7,14 +7,15 @@ import Embed from '../Embed'
 import Resolve from '../../util/Resolve'
 import Collection from '../../collection/Collection'
 import Message from '../Message'
+import { EndPoints } from '../../constants/Constants'
 
 class TextChannel extends GuildChannel implements TextBasedChannel {
     private _messages: Collection<string, Message> = new Collection();
     private resolve: Resolve;
-    _client: Bot
+    _bot: Bot
     constructor (
       _id: string,
-      _client: Bot,
+      _bot: Bot,
       _type: ChannelTypeDef,
       _lastMessageId: string,
       _lastPinTimestamp: Date,
@@ -29,7 +30,7 @@ class TextChannel extends GuildChannel implements TextBasedChannel {
     ) {
       super(
         _id,
-        _client,
+        _bot,
         _type,
         _name,
         _lastMessageId,
@@ -43,22 +44,33 @@ class TextChannel extends GuildChannel implements TextBasedChannel {
         _rateLimitPerUser
       )
 
-      this._client = _client
-      this.resolve = new Resolve(this.client)
+      this._bot = _bot
+      this.resolve = new Resolve(this.bot)
     }
 
     public get messages (): Collection<string, Message> {
       return this._messages
     }
 
-    public get client (): Bot {
-      return this._client
+    public get bot (): Bot {
+      return this._bot
+    }
+
+    public async createInvite (options?: CreateInviteOptions) {
+      const optionsResolvable = {
+        max_age: options?.maxAge,
+        mas_uses: options?.maxUses,
+        unique: options?.unique,
+        temporary: options?.temporary
+      }
+
+      const res = await this.bot.requestHandler('POST', `${EndPoints.channels}/${this.id}/${EndPoints.invites}`, optionsResolvable)
     }
 
     public async sendMessage (content: MessageContent) {
       if (typeof content === 'string') {
         const body: MessageOptions = { content }
-        const res = await this.client.rest.createMessage(body, this.id)
+        const res = await this.bot.rest.createMessage(body, this.id)
         res.guild_id = this.guild.id
         return await this.resolve.resolveMessage(res)
       }
@@ -68,12 +80,29 @@ class TextChannel extends GuildChannel implements TextBasedChannel {
           embeds: [content]
         }
 
-        const res = await this.client.rest.createMessage(options, this.id)
+        const res = await this.bot.rest.createMessage(options, this.id)
         res.guild_id = this.guild.id
         return await this.resolve.resolveMessage(res)
       }
 
-      const res = await this.client.rest.createMessage(content, this.id)
+      const contentResolvable: any = content
+      if (content.messageReference) {
+        contentResolvable.message_reference = {
+          guild_id: content.messageReference.guildId,
+          channel_id: content.messageReference.channelId,
+          message_id: content.messageReference.messageId
+        }
+      }
+
+      if (content.allowedMentions) {
+        contentResolvable.allowed_mentions = {
+          roles: content.allowedMentions.roles,
+          users: content.allowedMentions.users,
+          replied_user: content.allowedMentions.repliedUser
+        }
+      }
+
+      const res = await this.bot.rest.createMessage(contentResolvable, this.id)
       return await this.resolve.resolveMessage(res)
     }
 }

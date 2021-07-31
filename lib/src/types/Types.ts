@@ -15,7 +15,8 @@ export type ImageFormat = 'png' | 'jpeg' | 'jpg' | 'webp' | 'gif';
 export type CacheTypes = 'channels' | 'users' | 'guilds' | 'emojis';
 export type MessageContent = string | MessageOptions | Embed;
 export type StyleTimestamp = 't' | 'T' | 'd' | 'D' | 'f' | 'F' | 'R';
-
+export type snowflake = `${number}` | string
+export type requestTypes = 'PATCH' | 'POST' | 'PUT' | 'DELETE' | 'GET' | 'HEAD'
 export enum ChannelType {
     TEXT = 0,
     DM = 1,

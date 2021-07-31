@@ -2,7 +2,7 @@ import { Constants } from '../constants/Constants'
 import type Bot from '../Bot'
 import fetch from 'node-fetch'
 
-async function RequestHandler (client: Bot, headers: any, method: string, endpoint: string, data?: any) {
+async function RequestHandler (bot: Bot, headers: any, method: string, endpoint: string, data?: any) {
   const init: any = {
     method,
     headers
@@ -15,7 +15,14 @@ async function RequestHandler (client: Bot, headers: any, method: string, endpoi
   const req = await fetch(`${Constants.API}${endpoint.startsWith('/') ? `${endpoint}` : `/${endpoint}`}`, init)
 
   try {
-    return await req.json()
+    const json = await req.json()
+
+    if (json.message) {
+      if (json.errors.guild_id) return json
+      else bot.emit('error', json)
+    }
+
+    return json
   } catch {
     return req
   }

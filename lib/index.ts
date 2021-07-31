@@ -1,9 +1,7 @@
 import Bot from './src/Bot'
-import type { BotOptions, EmbedOptions } from './src/types/Interfaces'
 import * as Constants from './src/constants/Constants'
 import Intents from './src/util/Intents'
 import Collection from './src/collection/Collection'
-import BitField from './src/util/BitField'
 import Role from './src/structures/Role'
 import Member from './src/structures/Member'
 import User from './src/structures/User'
@@ -29,6 +27,9 @@ import Format from './src/util/DFormats'
 import Button from './src/structures/Button'
 import Components from './src/structures/Components'
 import SelectMenu from './src/structures/SelectMenu'
+import Lavalink from './src/voice/LavaLink'
+import VoiceState from './src/structures/VoiceState'
+import VoiceChannel from './src/structures/channels/VoiceChannel'
 
 export default {
   Bot,
@@ -36,7 +37,6 @@ export default {
   Constants,
   Intents,
   Collection,
-  BitField,
   Role,
   Member,
   User,
@@ -52,7 +52,7 @@ export default {
   Shard,
   ShardManager,
   CacheManager,
-  Rest: Rest,
+  Rest,
   Reaction,
   Command,
   CommandContext,
@@ -60,5 +60,8 @@ export default {
   Format,
   Button,
   Components,
-  SelectMenu
+  SelectMenu,
+  Lavalink,
+  VoiceState,
+  VoiceChannel
 }

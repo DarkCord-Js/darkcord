@@ -1,20 +1,24 @@
 import Collection from '../collection/Collection'
 import type Role from './Role'
-import type Member from './Member'
+import Member from './Member'
 import type Emoji from './Emoji'
 import GuildChannel from './channels/GuildChannel'
 import type Bot from '../Bot'
 import Resolve from '../util/Resolve'
+import VoiceState from './VoiceState'
+import { snowflake } from '../types/Types'
+import Permissions from '../util/Permissions'
 
 class Guild {
     private _roles: Collection<string, Role>;
     private _members: Collection<string, Member>;
     private _emojis: Collection<string, Emoji>;
     private _channels: Collection<string, GuildChannel>;
+    private _voiceStates: Collection<string, VoiceState>
 
     constructor (
         private _id: string,
-        private _client: Bot,
+        private _bot: Bot,
         private _name: string,
         private _icon: string,
         private _description: string,
@@ -55,160 +59,198 @@ class Guild {
       this._members = new Collection()
       this._emojis = new Collection()
       this._channels = new Collection()
+      this._voiceStates = new Collection()
     }
 
-    public get roles (): Collection<string, Role> {
+    get shard () {
+      const shardId = this.bot.guildShards.get(this.id)
+      return this.bot.shards.get(shardId || '0')
+    }
+
+    get roles (): Collection<string, Role> {
       return this._roles
     }
 
-    public set roles (roles: Collection<string, Role>) {
+    set roles (roles: Collection<string, Role>) {
       this._roles = roles
     }
 
-    public get emojis (): Collection<string, Emoji> {
+    get emojis (): Collection<string, Emoji> {
       return this._emojis
     }
 
-    public set emojis (emojis: Collection<string, Emoji>) {
+    set emojis (emojis: Collection<string, Emoji>) {
       this._emojis = emojis
     }
 
-    public get channels (): Collection<string, GuildChannel> {
+    get channels (): Collection<string, GuildChannel> {
       return this._channels
     }
 
-    public set channels (channels: Collection<string, GuildChannel>) {
+    set channels (channels: Collection<string, GuildChannel>) {
       this._channels = channels
     }
 
-    public get name () {
+    get name () {
       return this._name
     }
 
-    public get defaultMessageNotifications (): number {
+    get defaultMessageNotifications (): number {
       return this._defaultMessageNotifications
     }
 
-    public get members (): Collection<string, Member> {
+    get members (): Collection<string, Member> {
       return this._members
     }
 
-    public get systemChannelFlags (): number {
+    get systemChannelFlags (): number {
       return this._systemChannelFlags
     }
 
-    public get region (): string {
+    get region (): string {
       return this._region
     }
 
-    public set members (members: Collection<string, Member>) {
+    set members (members: Collection<string, Member>) {
       this._members = members
     }
 
-    public get id (): string {
+    get id (): string {
       return this._id
     }
 
-    public get icon (): string {
+    get icon (): string {
       return this._icon
     }
 
-    public get verificationLevel (): number {
+    get verificationLevel (): number {
       return this._verificationLevel
     }
 
-    public get vanityUrl (): string {
+    get vanityUrl (): string {
       return this._vanityUrl
     }
 
-    public get description (): string {
+    get description (): string {
       return this._description
     }
 
-    public get splash (): string {
+    get splash (): string {
       return this._splash
     }
 
-    public get maxMambers (): number {
+    get maxMambers (): number {
       return this._maxMembers
     }
 
-    public get nsfwLevel (): number {
+    get nsfwLevel (): number {
       return this._nsfw_level
     }
 
-    public get afkTimeout (): string {
+    get afkTimeout (): string {
       return this._afkTimeout
     }
 
-    public get maxPresences (): number {
+    get maxPresences (): number {
       return this._maxPresences
     }
 
-    public get presenceCount (): number {
+    get presenceCount (): number {
       return this._presenceCount
     }
 
-    public get banner (): string {
+    get banner (): string {
       return this._banner
     }
 
-    public get discoverySplash (): string {
+    get discoverySplash (): string {
       return this._discoverySplash
     }
 
-    public get explicitContentFilter (): number {
+    get explicitContentFilter (): number {
       return this._explicitContentFilter
     }
 
-    public get mfaLevel (): number {
+    get mfaLevel (): number {
       return this._mfaLevel
     }
 
-    public get stickers (): any[] {
+    get stickers (): any[] {
       return this._stickers
     }
 
-    public get boosterSubscriptionCount (): number {
+    get boosterSubscriptionCount (): number {
       return this._premiumSubscriptionCount
     }
 
-    public get boosterTier (): number {
+    get boosterTier (): number {
       return this._premiumTier
     }
 
-    public get applicationId (): string {
+    get applicationId (): string {
       return this._applicationId
     }
 
-    public get memberCount (): number {
+    get memberCount (): number {
       return this._memberCount
     }
 
-    public get client (): Bot {
-      return this._client
+    get bot (): Bot {
+      return this._bot
     }
 
-    public get rulesChannelId (): string {
+    get rulesChannelId (): string {
       return this._rulesChannelId
     }
 
-    public get features (): any[] {
+    get features (): any[] {
       return this._features
     }
 
-    public get ownerId (): string {
+    get voiceStates () {
+      return this._voiceStates
+    }
+
+    get ownerId (): snowflake {
       return this._ownerId
     }
 
-    public get owner (): Member | any {
+    permissionsOf (member: snowflake | Member) {
+      const _member = member instanceof Member ? member : this.members.get(member)
+
+      if (_member?.id === this.ownerId) {
+        return new Permissions(Permissions.FLAGS.ALL)
+      } else {
+        let permissions = this.roles.get(this.id)?.permissions.allow!
+
+        if (permissions & Permissions.FLAGS.ADMINISTRATOR) {
+          return new Permissions(Permissions.FLAGS.ALL)
+        }
+
+        _member?.roles.forEach((role) => {
+          const _role = this.roles.get(role.id)
+
+          const allow = _role?.permissions.allow!
+
+          if (allow & Permissions.FLAGS.ADMINISTRATOR) {
+            permissions = Permissions.FLAGS.ALL
+          } else {
+            permissions |= allow
+          }
+        })
+
+        return new Permissions(permissions!)
+      }
+    }
+
+    get owner () {
       let owner = this.members.get(this.ownerId)
 
       if (!owner) {
-        const resolve = new Resolve(this.client)
+        const resolve = new Resolve(this.bot)
 
         async () => {
-          const ownerMember = await this.client.rest.fetch.member(this.id, this.ownerId)
+          const ownerMember = await this.bot.rest.fetch.member(this.id, this.ownerId)
           owner = resolve.resolveMember(ownerMember, this.id)
           this.members.set(this.ownerId, owner)
         }
@@ -217,9 +259,9 @@ class Guild {
       return owner
     }
 
-    public async rulesChannel (): Promise<GuildChannel> {
-      let rulesChannel: GuildChannel = await this._client.rest.fetch.channel(this._rulesChannelId)
-      const resolve = new Resolve(this._client)
+    async rulesChannel (): Promise<GuildChannel> {
+      let rulesChannel: GuildChannel = await this._bot.rest.fetch.channel(this._rulesChannelId)
+      const resolve = new Resolve(this._bot)
       rulesChannel = await resolve.resolveTextChannel(rulesChannel.id)
       return rulesChannel
     }

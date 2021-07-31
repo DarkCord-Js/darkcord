@@ -3,11 +3,11 @@ import { MessageContent } from '../../types/Types'
 import type Message from '../Message'
 
 class CommandContext {
-  constructor (private _message: Message, private _client?: Bot) {}
+  constructor (private _message: Message, private _bot?: Bot) {}
 
   /** DarkCord Bot */
-  public get client () {
-    return this._client
+  public get bot () {
+    return this._bot
   }
 
   /** Get command Message */

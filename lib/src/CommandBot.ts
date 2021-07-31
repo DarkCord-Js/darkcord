@@ -29,7 +29,7 @@ class CommandBot extends Bot {
 
         const ctx = Command.createContext({
           message,
-          client: this
+          bot: this
         })
 
         this.commands.get(`${commandName}`)?.execute(ctx, args)

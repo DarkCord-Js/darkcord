@@ -7,7 +7,7 @@ import isConstructor from '../util/isConstructor'
 const commandsLoaded: string[] = []
 const eventsLoaded: string[] = []
 
-export async function CommandLoader (client: Bot, _path: string = './darkcord/commands') {
+export async function CommandLoader (bot: Bot, _path: string = './darkcord/commands') {
   const dir = path.join(path.dirname(<string>require.main?.filename), _path)
 
   fs.readdir(path.resolve(dir), (err, __) => {
@@ -24,7 +24,7 @@ export async function CommandLoader (client: Bot, _path: string = './darkcord/co
               path.join(_path, file)
             )
 
-            LoadCommando(client, _dir, file)
+            LoadCommando(bot, _dir, file)
           }
         })
       } else {
@@ -34,7 +34,7 @@ export async function CommandLoader (client: Bot, _path: string = './darkcord/co
             path.join(_path, pof)
           )
 
-          LoadCommando(client, _dir, pof)
+          LoadCommando(bot, _dir, pof)
         }
       }
     }
@@ -53,7 +53,7 @@ export async function CommandLoader (client: Bot, _path: string = './darkcord/co
   return r
 }
 
-function LoadCommando (client: Bot, _dir: string, file: string) {
+function LoadCommando (bot: Bot, _dir: string, file: string) {
   let commando = require(_dir)
 
   if (commando.default) {
@@ -68,7 +68,7 @@ function LoadCommando (client: Bot, _dir: string, file: string) {
 
       if (name) {
         commandsLoaded.push(name)
-        client.commands.set(name, commando)
+        bot.commands.set(name, commando)
       } else {
         throw new Error(`Missing command name.\nFile: ${file}`)
       }
@@ -77,7 +77,7 @@ function LoadCommando (client: Bot, _dir: string, file: string) {
 
       if (name) {
         commandsLoaded.push(name)
-        client.commands.set(name, commando)
+        bot.commands.set(name, commando)
       } else {
         throw new Error(`Missing command name.\nFile: ${file}`)
       }
@@ -87,7 +87,7 @@ function LoadCommando (client: Bot, _dir: string, file: string) {
   }
 }
 
-export function EventLoader (client: Bot, _path: string = './darkcord/events') {
+export function EventLoader (bot: Bot, _path: string = './darkcord/events') {
   const dir = path.join(path.dirname(<string>require.main?.filename), _path)
 
   fs.readdir(path.resolve(dir), (err, __) => {
@@ -104,7 +104,7 @@ export function EventLoader (client: Bot, _path: string = './darkcord/events') {
               path.join(_path, file)
             )
 
-            LoadEvent(client, _dir, file)
+            LoadEvent(bot, _dir, file)
           }
         })
       } else {
@@ -114,7 +114,7 @@ export function EventLoader (client: Bot, _path: string = './darkcord/events') {
             path.join(_path, pof)
           )
 
-          LoadEvent(client, _dir, pof)
+          LoadEvent(bot, _dir, pof)
         }
       }
     }
@@ -133,7 +133,7 @@ export function EventLoader (client: Bot, _path: string = './darkcord/events') {
   return r
 }
 
-function LoadEvent (client: Bot, _dir: string, file: string) {
+function LoadEvent (bot: Bot, _dir: string, file: string) {
   let event = require(_dir)
 
   if (event.default) {
@@ -149,7 +149,7 @@ function LoadEvent (client: Bot, _dir: string, file: string) {
       if (name) {
         eventsLoaded.push(name)
         if (event.execute) {
-          client.on(name, (...args) => event.execute(...args))
+          bot.on(name, (...args) => event.execute(...args))
         } else {
           throw new Error(`Missing event execute.\nFile: ${file}`)
         }
@@ -162,7 +162,7 @@ function LoadEvent (client: Bot, _dir: string, file: string) {
       if (name) {
         commandsLoaded.push(name)
         if (event.execute) {
-          client.on(name, (...args) => event.execute(...args))
+          bot.on(name, (...args) => event.execute(...args))
         } else {
           throw new Error(`Missing event execute.\nFile: ${file}`)
         }

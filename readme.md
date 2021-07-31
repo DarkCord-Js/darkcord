@@ -4,18 +4,18 @@
 ```js
 const DarkCord = require('darkcord.js')
 
-const client = new DarkCord.Bot({
+const bot = new DarkCord.Bot({
     intents: [INTENTS], // Ex. DarkCord.Intents.GUILD_MESSAGES
     token: 'Bot Token'
 }) // => Bot
 
-client.on('message', (message) => {
+bot.on('message', (message) => {
     if (message.content === '!ping') {
-        return message.channel.send('pong!')
+        return message.channel.sendMessage('pong!')
     }
 })
 
 (async () => {
-    await client.run() // => Promise<Bot>
+    await bot.run() // => Promise<Bot>
 })()
 ```

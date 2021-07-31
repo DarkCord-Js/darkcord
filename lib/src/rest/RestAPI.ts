@@ -3,16 +3,17 @@ import { headers } from '../constants/PayLoads'
 import type { API_ChannelCreate, MessageOptions } from '../types/Interfaces'
 import { Constants, EndPoints } from '../constants/Constants'
 import Fetch from './Fetch'
+import { requestTypes } from '../types/Types'
 
 class RestAPI {
     private _token: string = '';
     public fetch: Fetch;
-    private requestHandler: (method: string, endpoint: string, data?: any) => Promise<any>
-    constructor (private client: Bot) {
+    private requestHandler: (method: requestTypes, endpoint: string, data?: any) => Promise<any>
+    constructor (private bot: Bot) {
       this._token = ''
-      this.fetch = new Fetch(this.client)
+      this.fetch = new Fetch(this.bot)
 
-      this.requestHandler = this.client.requestHandler
+      this.requestHandler = this.bot.requestHandler
     }
 
     async createMessage (options: MessageOptions, id: string): Promise<any> {

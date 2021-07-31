@@ -3,7 +3,7 @@ import { ChannelTypeDef } from '../../types/Types'
 
 class BaseChannel {
   constructor (
-        protected _client: Bot,
+        protected _bot: Bot,
         private _id: string,
         private _name: string,
         private _type: ChannelTypeDef
@@ -15,8 +15,8 @@ class BaseChannel {
     return this._name
   }
 
-  public get client (): Bot {
-    return this._client
+  public get bot (): Bot {
+    return this._bot
   }
 
   public get type (): ChannelTypeDef {

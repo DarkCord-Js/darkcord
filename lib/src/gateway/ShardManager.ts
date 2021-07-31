@@ -4,7 +4,7 @@ import Shard from './Shard'
 import { Events } from '../constants/Events'
 
 class ShardManager extends Collection<string, Shard> {
-  constructor (private client: Bot) {
+  constructor (private bot: Bot) {
     super()
   }
 
@@ -13,15 +13,15 @@ class ShardManager extends Collection<string, Shard> {
 
     if (!shard) {
       try {
-        shard = new Shard(id, this.client)
+        shard = new Shard(id, this.bot)
         this.set(id, shard)
-        shard.connect(this.client.token)
+        shard.connect(this.bot.token)
       } catch (err) {
         throw new Error(err)
       }
 
       shard?.on('ready', () => {
-        this.client.emit(Events.SHARD_READY, shard?.id)
+        this.bot.emit(Events.SHARD_READY, shard?.id)
       })
     }
   }

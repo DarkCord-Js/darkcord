@@ -1,12 +1,9 @@
 class Collection<K, V> extends Map<K, V> {
-  constructor (
-      private baseObject?: object | Function | Record<string, any> | any,
-      private limit?: number
-  ) {
+  constructor () {
     super()
   }
 
-  map (func: Function): any[] {
+  map (func: (value: V) => any): V[] {
     const CollectionMap = []
     for (const value of this.values()) {
       CollectionMap.push(func(value))
@@ -14,7 +11,7 @@ class Collection<K, V> extends Map<K, V> {
     return CollectionMap
   }
 
-  filter (func: Function): any[] {
+  filter (func: (value: V) => any): V[] {
     const CollectionFilter = []
     for (const value of this.values()) {
       if (func(value)) {
@@ -24,15 +21,15 @@ class Collection<K, V> extends Map<K, V> {
     return CollectionFilter
   }
 
-  find (func: Function): any[] {
-    const CollectionFind = []
+  find (func: (value: V) => any): V[] {
+    const CollectionFind: V[] = []
     for (const value of this.values()) {
       CollectionFind.push(func(value))
     }
     return CollectionFind
   }
 
-  random (): any[] {
+  random (): V[] {
     const index = Math.round(Math.random() * this.size)
     const values = this.values()
 
@@ -40,43 +37,6 @@ class Collection<K, V> extends Map<K, V> {
       values.next()
     }
     return values.next().value
-  }
-
-  add (obj: Record<any, any> | any, extra?: any, replace?: any) {
-    const existing = this.get(obj.id)
-
-    // Ifs
-    if (this.limit === 0) {
-      return (
-        obj instanceof this.baseObject || obj?.constructor.name === this.baseObject.name
-      )
-        ? obj
-        : new this.baseObject(extra, replace)
-    }
-
-    if (obj.id == null) throw new Error('Missing object id')
-
-    if (existing && !replace) return existing
-
-    if (this.limit && this.size > this.limit) {
-      const keys = this.keys()
-      while (this.size > this.limit) {
-        this.delete(keys.next().value)
-      }
-    }
-    return obj
-  }
-
-  update (obj: Record<any, any> | any, extra?: any, replace?: any) {
-    const item = this.get(obj.id)
-
-    if (!obj.id && obj.id !== 0) throw new Error('Missing object id')
-
-    if (!item) return this.add(obj, extra, replace)
-
-    // @ts-ignore
-    item.update(obj, extra)
-    return item
   }
 
   every (func: Function): boolean {
@@ -116,7 +76,11 @@ class Collection<K, V> extends Map<K, V> {
   }
 
   toString () {
-    return `[Collection<${this.baseObject?.name}>]`
+    let name: any = null
+    this.forEach((a: any) => {
+      if (!name) name = a.name
+    })
+    return `[Collection<${name}>]`
   }
 }
 

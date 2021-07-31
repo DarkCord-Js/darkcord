@@ -8,8 +8,8 @@ import type User from './structures/User'
 import type Guild from './structures/Guild'
 import type BaseChannel from './structures/channels/BaseChannel'
 import type Emoji from './structures/Emoji'
-import type { BotOptions, BotOptions2, CommandOptions, Plugin } from './types/Interfaces'
-import type { IntentsType } from './types/Types'
+import type { BotOptions, BotOptions2, CommandOptions, LavaLinkOptions, Plugin, SlashCommandOptions } from './types/Interfaces'
+import type { IntentsType, requestTypes, snowflake } from './types/Types'
 import type Message from './structures/Message'
 import type Reaction from './structures/Reaction'
 import CacheManager from './managers/CacheManager'
@@ -17,9 +17,16 @@ import Resolve from './util/Resolve'
 import Member from './structures/Member'
 import RequestHandler from './handler/RequestHandler'
 import BotUser from './BotUser'
-import { headers } from './constants/PayLoads'
+import { headers, payload } from './constants/PayLoads'
 import type Interaction from './structures/Interaction'
 import PluginsManager from './managers/PluginsManager'
+import { EndPoints } from './constants/Constants'
+import Shard from './gateway/Shard'
+import VoiceState from './structures/VoiceState'
+import LavaLink from './voice/LavaLink'
+import Role from './structures/Role'
+import TextChannel from './structures/channels/TextChannel'
+
 declare interface Bot {
   on (event: string | symbol, listener: (...args: any[]) => void): Bot
   on (event: 'message', listener: (message: Message) => void): Bot
@@ -27,11 +34,21 @@ declare interface Bot {
   on (event: 'reactionRemove', listener: (reaction: Reaction) => void): Bot
   on (event: 'ready', listener: () => void): Bot
   on (event: 'guildCreate', listener: (guild: Guild) => void): Bot
-  on (event: 'guildDelete', listener: (guildId: string) => void): Bot
+  on (event: 'guildDelete', listener: (guildId: snowflake) => void): Bot
   on (event: 'command', listener: (command: CommandOptions) => void): Bot
   on (event: 'hello', listener: (heartbeatInterval: number) => void): Bot
   on (event: 'interaction', listener: (interaction: Interaction) => void): Bot
   on (event: 'debug', listener: (message: string) => void): Bot
+  on (event: 'voiceStateUpdate', listener: (voiceState: VoiceState) => void): Bot
+  on (event: 'raw', listener: (payload: payload) => void): Bot
+  on (event: 'memberUpdate', listener: (member: Member) => void): Bot
+  on (event: 'guildUpdate', listener: (guild: Guild) => void): Bot
+  on (event: 'roleCreate', listener: (role: Role, guild: Guild) => void): Bot
+  on (event: 'roleUpdate', listener: (role: Role, guild: Guild) => void): Bot
+  on (event: 'roleDelete', listener: (roleId: snowflake, guild: Guild) => void): Bot
+  on (event: 'typing', listener: (channel: TextChannel, user: User, timestamp: number, guild: Guild | null) => void): Bot
+  on (event: 'messageDelete', listener: (id: snowflake, channel: TextChannel, guild: Guild | null) => void): Bot
+  on (event: 'messageBulkDelete', listener: (ids: snowflake[], channel: TextChannel, guild: Guild | null) => void): Bot
 
   once (event: string | symbol, listener: (...args: any[]) => void): Bot
   once (event: 'message', listener: (message: Message) => void): Bot
@@ -39,11 +56,21 @@ declare interface Bot {
   once (event: 'reactionRemove', listener: (reaction: Reaction) => void): Bot
   once (event: 'ready', listener: () => void): Bot
   once (event: 'guildCreate', listener: (guild: Guild) => void): Bot
-  once (event: 'guildDelete', listener: (guildId: string) => void): Bot
+  once (event: 'guildDelete', listener: (guildId: snowflake) => void): Bot
   once (event: 'command', listener: (command: CommandOptions) => void): Bot
   once (event: 'hello', listener: (heartbeatInterval: number) => void): Bot
   once (event: 'interaction', listener: (interaction: Interaction) => void): Bot
   once (event: 'debug', listener: (message: string) => void): Bot
+  once (event: 'voiceStateUpdate', listener: (voiceState: VoiceState) => void): Bot
+  once (event: 'raw', listener: (payload: payload) => void): Bot
+  once (event: 'memberUpdate', listener: (member: Member) => void): Bot
+  once (event: 'guildUpdate', listener: (guild: Guild) => void): Bot
+  once (event: 'roleCreate', listener: (role: Role, guild: Guild) => void): Bot
+  once (event: 'roleUpdate', listener: (role: Role, guild: Guild) => void): Bot
+  once (event: 'roleDelete', listener: (roleId: snowflake, guild: Guild) => void): Bot
+  once (event: 'typing', listener: (channel: TextChannel, user: User, timestamp: number, guild: Guild | null) => void): Bot
+  once (event: 'messageDelete', listener: (id: snowflake, channel: TextChannel, guild: Guild | null) => void): Bot
+  once (event: 'messageBulkDelete', listener: (ids: snowflake[], channel: TextChannel, guild: Guild | null) => void): Bot
 }
 
 /** DarkCord Bot */
@@ -59,6 +86,8 @@ class Bot extends EventEmitter {
     public user: BotUser | any;
     public socket: WebSocket
     public plugins: Record<string, Plugin>
+    public guildShards: Collection<string, string>
+    public shards: Collection<string, Shard>
     constructor (private _options?: BotOptions) {
       super()
 
@@ -66,6 +95,8 @@ class Bot extends EventEmitter {
       this.guilds = new Collection()
       this.emojis = new Collection()
       this.channels = new Collection()
+      this.shards = new Collection()
+      this.guildShards = new Collection()
 
       let intents = 0
       if (this._options?.intents) {
@@ -112,8 +143,8 @@ class Bot extends EventEmitter {
             let time = 250
             setInterval(() => {
               time += 250
-              const timeFormated = `${(time / 1000 / 60).toFixed()}:${(time / 1000 / 60).toFixed()}:${(time / 1000).toFixed()}`
-              process.stdout.write(`\r${P[x++]} ${timeFormated} \u001b[30;1mRunning DarkCord ${require('../../../package.json').version}   \u001b[0m`)
+              const timeFormated = `${(time / 1000).toFixed()}`
+              process.stdout.write(`\r${P[x++]} ${timeFormated} \u001b[30;1mRunning DarkCord ${require('../../../package.json').version}\u001b[0m   `)
               x %= P.length
             }, 250)
           }
@@ -154,6 +185,10 @@ class Bot extends EventEmitter {
     /** Get bot host os */
     get os (): string {
       return `${process.platform}`
+    }
+
+    lavaLink (host: string, port: number, password: string, options?: LavaLinkOptions) {
+      return new LavaLink(this, host, port, password, options)
     }
 
     /** Get discord user */
@@ -216,7 +251,41 @@ class Bot extends EventEmitter {
       return channel
     }
 
-    async requestHandler (method: string, endpoint: string, data?: any) {
+    get slash () {
+      return {
+        create: {
+          guild: this.createSlash,
+          global: this.createGlobalSlash
+        },
+        delete: {
+          guild: this.deleteSlash
+        }
+      }
+    }
+
+    async createGlobalSlash (options: SlashCommandOptions) {
+      if (!options.type) options.type = 1
+      return await this.requestHandler('POST', `${EndPoints.applications}/${this.user.id}/${EndPoints.commands}`, options)
+    }
+
+    async createSlash (guildId: string, options: SlashCommandOptions) {
+      if (!options.type) options.type = 1
+      return await this.requestHandler('POST', `${EndPoints.applications}/${this.user.id}/${EndPoints.guilds}/${guildId}/${EndPoints.commands}`, options)
+    }
+
+    async deleteSlash (guildId: string, commandId: string) {
+      return await this.requestHandler('DELETE', `${EndPoints.applications}/${this.user.id}/${EndPoints.guilds}/${guildId}/${EndPoints.commands}/${commandId}`)
+    }
+
+    async getInvite (inviteCode: string) {
+      const invite = await this.requestHandler('GET', `${EndPoints.invites}/${inviteCode}`)
+
+      const resolve = new Resolve(this)
+
+      return resolve.resolveInvite(invite)
+    }
+
+    async requestHandler (method: requestTypes, endpoint: string, data?: any) {
       return await RequestHandler(this, headers, method, endpoint, data)
     }
 

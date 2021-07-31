@@ -5,7 +5,7 @@ class PluginsManager {
   private pluginsArray: Plugin[] = []
   plugins: Record<string, Plugin>
   constructor (
-      private client: Bot,
+      private bot: Bot,
       public pluginsLimit: number = 5,
       plugins: Plugin[]
   ) {
@@ -20,10 +20,10 @@ class PluginsManager {
       }
 
       if (plugin.startOnReady) {
-        if (plugin.type === 'client') {
-          this.client.on('ready', () => plugin.exec(this.client))
+        if (plugin.type === 'bot') {
+          this.bot.on('ready', () => plugin.exec(this.bot))
         }
-        this.client.on('ready', () => plugin.exec())
+        this.bot.on('ready', () => plugin.exec())
       }
       this.plugins[plugin.name] = plugin
     }
@@ -35,8 +35,8 @@ class PluginsManager {
 
   runPlugin (pluginName: string) {
     const plugin = this.plugins[pluginName]
-    if (plugin.type === 'client') {
-      return plugin.exec(this.client)
+    if (plugin.type === 'bot') {
+      return plugin.exec(this.bot)
     } else {
       plugin.exec()
     }

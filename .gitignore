@@ -6,3 +6,4 @@ import_map.json
 node_modules
 dist
 darkcord
+.vs

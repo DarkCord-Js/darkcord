@@ -12,16 +12,16 @@ class DMChannel extends BaseChannel {
     private resolve: Resolve;
     constructor (
       _id: string,
-      _client: Bot,
+      _bot: Bot,
       _type: ChannelTypeDef,
       _lastMessageId: string,
       _lastPinTimestamp: Date,
       _name: string,
       _position: number
     ) {
-      super(_client, _id, _name, _type)
+      super(_bot, _id, _name, _type)
 
-      this.resolve = new Resolve(_client)
+      this.resolve = new Resolve(_bot)
     }
 
     get messages (): Collection<string, Message> {
@@ -31,7 +31,7 @@ class DMChannel extends BaseChannel {
     async sendMessage (content: MessageContent) {
       if (typeof content === 'string') {
         const body: MessageOptions = { content }
-        const res = await this.client.rest.createMessage(body, this.id)
+        const res = await this.bot.rest.createMessage(body, this.id)
         return await this.resolve.resolveMessage(res)
       }
 
@@ -40,11 +40,11 @@ class DMChannel extends BaseChannel {
           embeds: [content]
         }
 
-        const res = await this.client.rest.createMessage(options, this.id)
+        const res = await this.bot.rest.createMessage(options, this.id)
         return await this.resolve.resolveMessage(res)
       }
 
-      const res = await this.client.rest.createMessage(content, this.id)
+      const res = await this.bot.rest.createMessage(content, this.id)
       return await this.resolve.resolveMessage(res)
     }
 }

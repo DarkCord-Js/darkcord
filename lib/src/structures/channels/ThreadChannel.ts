@@ -20,7 +20,7 @@ class ThreadChannel extends GuildChannel {
     members: Collection<string, Member>
     constructor (
       _id: string,
-      _client: Bot,
+      _bot: Bot,
       _type: ChannelTypeDef,
       _name: string,
       _lastMessageId: string,
@@ -36,7 +36,7 @@ class ThreadChannel extends GuildChannel {
     ) {
       super(
         _id,
-        _client,
+        _bot,
         _type,
         _name,
         _lastMessageId,
@@ -71,17 +71,17 @@ class ThreadChannel extends GuildChannel {
     }
 
     async join () {
-      await this.client.requestHandler('PUT', `${EndPoints.channels}/${this.id}/${EndPoints.thread_members}/@me`)
+      await this.bot.requestHandler('PUT', `${EndPoints.channels}/${this.id}/${EndPoints.thread_members}/@me`)
       return this
     }
 
     async leave () {
-      await this.client.requestHandler('DELETE', `${EndPoints.channels}/${this.id}/${EndPoints.thread_members}/@me`)
+      await this.bot.requestHandler('DELETE', `${EndPoints.channels}/${this.id}/${EndPoints.thread_members}/@me`)
       return this
     }
 
     async edit (options: editOptions) {
-      let newThreadChannel = await this.client.requestHandler('PATCH', `${EndPoints.channels}/${this.id}`, {
+      let newThreadChannel = await this.bot.requestHandler('PATCH', `${EndPoints.channels}/${this.id}`, {
         name: options.name ?? this.name,
         archived: options.archived,
         auto_archive_duration: options.autoArchiveDuration,
@@ -89,9 +89,9 @@ class ThreadChannel extends GuildChannel {
         locked: options.locked
       })
 
-      const resolve = new Resolve(this.client)
+      const resolve = new Resolve(this.bot)
       newThreadChannel = resolve.resolveThreadChannel(newThreadChannel)
-      new CacheManager(this.client).manage('channels', this.id, newThreadChannel)
+      new CacheManager(this.bot).manage('channels', this.id, newThreadChannel)
     }
 }
 

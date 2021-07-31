@@ -5,10 +5,10 @@ import ShardManager from '../gateway/ShardManager'
 /** DarkCord WebSocket Manager */
 class WsManager extends EventEmitter {
     private shards: ShardManager;
-    constructor (private client: Bot) {
+    constructor (private bot: Bot) {
       super()
 
-      this.shards = new ShardManager(this.client)
+      this.shards = new ShardManager(this.bot)
     }
 
     /** Spawn Shards */

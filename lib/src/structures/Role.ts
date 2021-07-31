@@ -1,13 +1,17 @@
+import { snowflake } from '../types/Types'
+import Permissions from '../util/Permissions'
+
 class Role {
   constructor (
-        private _id: string,
+        private _id: snowflake,
         private _name: string,
         private _color: number = 0,
         private _hoist: boolean = false,
         private _position: number = 0,
-        private _permissions: number = 0,
+        private _permissions: string,
         private _managed: boolean = false,
-        private _mentionable: boolean = false
+        private _mentionable: boolean = false,
+        private _permissions_new: string | null
   ) {
     return this
   }
@@ -32,8 +36,8 @@ class Role {
     return this._position
   }
 
-  public get permissions (): number {
-    return this._position
+  public get permissions () {
+    return new Permissions(this._permissions_new || this._permissions)
   }
 
   public get managed (): boolean {

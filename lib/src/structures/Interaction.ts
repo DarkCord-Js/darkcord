@@ -12,7 +12,7 @@ import User from './User'
 
 class Interaction {
   constructor (
-        private client: Bot,
+        private bot: Bot,
         public token: string,
         public version: number,
         private _id: string,
@@ -129,7 +129,7 @@ class Interaction {
       }
     }
 
-    this.client.requestHandler('POST', `${EndPoints.interactions}/${this.id}/${this.token}/${EndPoints.callback}`, {
+    this.bot.requestHandler('POST', `${EndPoints.interactions}/${this.id}/${this.token}/${EndPoints.callback}`, {
       type,
       data
     })

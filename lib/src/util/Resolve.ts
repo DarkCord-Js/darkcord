@@ -16,13 +16,16 @@ import ThreadChannel from '../structures/channels/ThreadChannel'
 import Interaction from '../structures/Interaction'
 import CategoryChannel from '../structures/channels/CategoryChannel'
 import parseEmoji from './ParseEmoji'
+import Invite from '../structures/Invite'
+import VoiceChannel from '../structures/channels/VoiceChannel'
+import VoiceState from '../structures/VoiceState'
 
 class Resolve {
   private cache: CacheManager;
   constructor (
-        private client: Bot
+        private bot: Bot
   ) {
-    this.cache = new CacheManager(this.client)
+    this.cache = new CacheManager(this.bot)
     return this
   }
 
@@ -76,12 +79,13 @@ class Resolve {
       premium_since,
       avatar,
       muted,
-      deaf
+      deaf,
+      roles
     } = member
 
-    return new Member(
+    const rmember = new Member(
       user.id,
-      this.client,
+      this.bot,
       user,
       nick,
       joined_at,
@@ -89,7 +93,37 @@ class Resolve {
       deaf,
       muted,
       avatar,
-      guildId
+      guildId,
+      roles
+    )
+
+    /* if (roles && roles !== []) {
+      for (const role of roles) {
+        const guild = rmember.guild
+        const rroles = guild?.roles.filter((r) => r.id === role)
+
+        if (rroles) {
+          for (const rrole of rroles) {
+            rmember.roles.set(rrole.id, rrole)
+          }
+        }
+      }
+    } */
+
+    return rmember
+  }
+
+  resolveInvite (invite: any) {
+    const guild = this.resolveGuild(invite.guild)
+
+    return new Invite(
+      this.bot,
+      invite.code,
+      guild,
+      invite.channel,
+      invite.inviter,
+      invite.approximate_presence_count,
+      invite.approximate_member_count
     )
   }
 
@@ -102,7 +136,8 @@ class Resolve {
       role.position,
       role.permissions,
       role.managed,
-      role.mentionable
+      role.mentionable,
+      role.permissions_new
     )
   }
 
@@ -151,7 +186,7 @@ class Resolve {
 
     const guildResolvable = new Guild(
       id,
-      this.client,
+      this.bot,
       name,
       icon,
       description,
@@ -192,7 +227,7 @@ class Resolve {
     if (roles) {
       for (const role of roles) {
         const rrole = this.resolveRole(role)
-        guildResolvable.roles.set(rrole.id, role)
+        guildResolvable.roles.set(rrole.id, rrole)
       }
     }
 
@@ -203,16 +238,18 @@ class Resolve {
       }
     }
 
-    /* for (const member of members) {
-      const rmember = this.resolveMember(member, id)
-      guildResolvable.members.set(rmember.user.id, rmember)
-    } */
+    if (members) {
+      for (const member of members) {
+        const rmember = this.resolveMember(member, id)
+        guildResolvable.members.set(rmember.user.id, rmember)
+      }
+    }
 
     return guildResolvable
   }
 
   async resolveTextChannel (channel: any) {
-    const client = this.client
+    const bot = this.bot
     const {
       id,
       type,
@@ -228,17 +265,17 @@ class Resolve {
       rate_limit_per_user
     } = channel
 
-    let guild: Guild | any = client.guilds.get(guild_id)
+    let guild: Guild | any = bot.guilds.get(guild_id)
 
     if (!guild) {
-      guild = await client.rest.fetch.guild(guild_id)
+      guild = await bot.rest.fetch.guild(guild_id)
       guild = this.resolveGuild(guild)
       this.cache.manage('guilds', guild.id, guild)
     }
 
     return new TextChannel(
       id,
-      client,
+      bot,
       type,
       last_message_id,
       last_pin_timestamp,
@@ -270,17 +307,17 @@ class Resolve {
       thread_metadata
     } = channel
 
-    let guild: Guild | any = this.client.guilds.get(guild_id)
+    let guild: Guild | any = this.bot.guilds.get(guild_id)
 
     if (!guild) {
-      guild = await this.client.rest.fetch.guild(guild_id)
+      guild = await this.bot.rest.fetch.guild(guild_id)
       guild = this.resolveGuild(guild)
       this.cache.manage('guilds', guild.id, guild)
     }
 
     return new ThreadChannel(
       id,
-      this.client,
+      this.bot,
       type,
       name,
       last_message_id,
@@ -304,9 +341,9 @@ class Resolve {
       guild_id
     } = reaction
 
-    let user = this.client.users.get(user_id)
-    let guild = this.client.guilds.get(guild_id)
-    let channel = this.client.channels.get(channel_id)
+    let user = this.bot.users.get(user_id)
+    let guild = this.bot.guilds.get(guild_id)
+    let channel = this.bot.channels.get(channel_id)
     const emoji = this.resolveEmoji(reaction.emoji)
 
     let member
@@ -315,24 +352,24 @@ class Resolve {
     }
 
     if (!user) {
-      user = await this.client.rest.fetch.user(user_id)
+      user = await this.bot.rest.fetch.user(user_id)
       user = this.resolveUser(<any>user)
       this.cache.manage('users', user_id, user)
     }
 
     if (!guild) {
-      guild = await this.client.rest.fetch.guild(guild_id)
+      guild = await this.bot.rest.fetch.guild(guild_id)
       guild = this.resolveGuild(guild)
       this.cache.manage('guilds', guild_id, guild)
     }
 
     if (!channel) {
-      channel = await this.client.rest.fetch.channel(channel_id)
+      channel = await this.bot.rest.fetch.channel(channel_id)
       channel = await this.resolveTextChannel(channel)
       this.cache.manage('channels', channel_id, channel)
     }
 
-    let message = await this.client.rest.fetch.message(channel_id, message_id)
+    let message = await this.bot.rest.fetch.message(channel_id, message_id)
     message = this.resolveMessage(message)
 
     return new Reaction(
@@ -362,17 +399,17 @@ class Resolve {
       rate_limit_per_user
     } = channel
 
-    let guild: Guild | any = this.client.guilds.get(guild_id)
+    let guild: Guild | any = this.bot.guilds.get(guild_id)
 
     if (!guild) {
-      guild = await this.client.rest.fetch.guild(guild_id)
+      guild = await this.bot.rest.fetch.guild(guild_id)
       guild = this.resolveGuild(guild)
       this.cache.manage('guilds', guild.id, guild)
     }
 
     return new CategoryChannel(
       id,
-      this.client,
+      this.bot,
       type,
       name,
       last_message_id,
@@ -403,17 +440,17 @@ class Resolve {
       rate_limit_per_user
     } = channel
 
-    let guild: Guild | any = this.client.guilds.get(guild_id)
+    let guild: Guild | any = this.bot.guilds.get(guild_id)
 
     if (!guild) {
-      guild = await this.client.rest.fetch.guild(guild_id)
+      guild = await this.bot.rest.fetch.guild(guild_id)
       guild = this.resolveGuild(guild)
       this.cache.manage('guilds', guild.id, guild)
     }
 
     return new TextChannel(
       id,
-      this.client,
+      this.bot,
       type,
       last_message_id,
       last_pin_timestamp,
@@ -428,6 +465,47 @@ class Resolve {
     )
   }
 
+  async resolveVoiceChannel (channel: any) {
+    let guild: Guild | any = this.bot.guilds.get(channel.guild_id)
+
+    if (!guild) {
+      guild = await this.bot.rest.fetch.guild(channel.guild_id)
+      guild = this.resolveGuild(guild)
+      this.cache.manage('guilds', guild.id, guild)
+    }
+
+    return new VoiceChannel(
+      this.bot,
+      channel.id,
+      channel.name,
+      channel.type,
+      guild,
+      channel.bitrate,
+      channel.rtc_region,
+      channel.user_limit,
+      channel.user_id
+    )
+  }
+
+  async resolveVoiceState (voiceState: any) {
+    const channel = await this.bot.getChannel(voiceState.channel_id)
+
+    const member = this.resolveMember(voiceState.member, channel.guild.id)
+
+    return new VoiceState(
+      channel.guild,
+      channel,
+      voiceState.user_id,
+      member,
+      voiceState.suppress,
+      voiceState.session_id,
+      voiceState.self_mute,
+      voiceState.self_deaf,
+      voiceState.deaf,
+      voiceState.mute
+    )
+  }
+
   async resolveChannel (channel: any) {
     switch (channel.type) {
       case 0:
@@ -435,7 +513,7 @@ class Resolve {
       case 1:
         return await this.resolveTextChannel(channel)
       case 2:
-        return null
+        return await this.resolveVoiceChannel(channel)
       case 3:
         return await this.resolveTextChannel(channel)
       case 4:
@@ -450,15 +528,15 @@ class Resolve {
   async resolveInteraction (interaction: any) {
     const { guild_id } = interaction
 
-    let guild = this.client.guilds.get(guild_id)
+    let guild = this.bot.guilds.get(guild_id)
 
     if (!guild) {
-      guild = await this.client.rest.fetch.guild(guild_id)
+      guild = await this.bot.rest.fetch.guild(guild_id)
       guild = this.resolveGuild(guild)
       this.cache.manage('guilds', guild_id, guild)
     }
 
-    const channel = await this.resolveChannel(await this.client.rest.fetch.channel(interaction.channel_id))
+    const channel = await this.resolveChannel(await this.bot.rest.fetch.channel(interaction.channel_id))
 
     let member
     if ('member' in interaction) {
@@ -476,7 +554,7 @@ class Resolve {
     }
 
     return new Interaction(
-      this.client,
+      this.bot,
       interaction.token,
       interaction.version,
       interaction.id,
@@ -492,7 +570,7 @@ class Resolve {
   }
 
   async resolveMessage (message: any) {
-    const client = this.client
+    const bot = this.bot
     const {
       channel_id,
       guild_id,
@@ -500,13 +578,13 @@ class Resolve {
       embeds
     } = message
 
-    let channel: BaseChannel | any = client.channels.get(channel_id)
-    let guild: Guild | any = client.guilds.get(guild_id)
-    let user: User | any = client.users.get(author?.id)
+    let channel: BaseChannel | any = bot.channels.get(channel_id)
+    let guild: Guild | any = bot.guilds.get(guild_id)
+    let user: User | any = bot.users.get(author?.id)
     let member = guild?.members?.get(author?.id)
 
     if (!channel) {
-      channel = await client.rest.fetch.channel(channel_id)
+      channel = await bot.rest.fetch.channel(channel_id)
     }
 
     const type: ChannelType = getChannelType(channel.type)
@@ -523,27 +601,27 @@ class Resolve {
     this.cache.manage('channels', channel.id, channel)
 
     if (!guild) {
-      guild = await client.rest.fetch.guild(guild_id)
+      guild = await bot.rest.fetch.guild(guild_id)
       guild = this.resolveGuild(guild)
     }
 
     this.cache.manage('guilds', guild.id, guild)
 
     if (!user) {
-      user = await client.rest.fetch.user(author?.id)
+      user = await bot.rest.fetch.user(author?.id)
       user = this.resolveUser(user)
     }
 
     this.cache.manage('users', user.id, user)
 
     if (!member) {
-      member = await client.rest.fetch.member(guild_id, author?.id)
+      member = await bot.rest.fetch.member(guild_id, author?.id)
       member = this.resolveMember(member, guild_id)
 
       guild?.members?.set(member.user.id, member)
     }
 
-    const resolvableMessage: Message = this.resolveMessageInstance(message, client, channel, guild, user, member)
+    const resolvableMessage: Message = this.resolveMessageInstance(message, bot, channel, guild, user, member)
 
     resolvableMessage.embeds = embeds
     return resolvableMessage
@@ -551,7 +629,7 @@ class Resolve {
 
   resolveMessageInstance (
     message: any,
-    client: Bot,
+    bot: Bot,
     channel: TextChannel,
     guild: Guild,
     user: User,
@@ -559,7 +637,7 @@ class Resolve {
   ): Message {
     const { id, content, timestamp, edited_timestamp, tts, mention_everyone, nonce, pinned, type } = message
     return new Message(
-      client,
+      bot,
       id,
       channel,
       guild,
