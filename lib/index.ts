@@ -30,6 +30,8 @@ import SelectMenu from './src/structures/SelectMenu'
 import Lavalink from './src/voice/LavaLink'
 import VoiceState from './src/structures/VoiceState'
 import VoiceChannel from './src/structures/channels/VoiceChannel'
+import Permissions from './src/util/Permissions'
+import Emojis from './src/util/Emojis/Emojis'
 
 export default {
   Bot,
@@ -63,5 +65,7 @@ export default {
   SelectMenu,
   Lavalink,
   VoiceState,
-  VoiceChannel
+  VoiceChannel,
+  Permissions,
+  Emojis
 }

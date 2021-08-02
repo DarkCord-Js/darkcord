@@ -11,6 +11,7 @@ import Message from './Message'
 import User from './User'
 
 class Interaction {
+  timestamp: number
   constructor (
         private bot: Bot,
         public token: string,
@@ -24,7 +25,9 @@ class Interaction {
         private _member: Member | null,
         private _user: User | null,
         private _message: Message | null
-  ) {}
+  ) {
+    this.timestamp = Date.now()
+  }
 
   public get guild () {
     return this._guild

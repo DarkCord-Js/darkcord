@@ -60,8 +60,8 @@ class Message {
       return this._member
     }
 
-    public get timestamp (): Date {
-      return this._timestamp
+    public get timestamp () {
+      return new Date(this._timestamp).getTime()
     }
 
     public get type (): number {

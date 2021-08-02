@@ -1,40 +1,3 @@
-/* eslint-disable no-multi-spaces */
-type FLAGSTYPE =
-'CREATE_INSTANT_INVITE'    |
-'KICK_MEMBERS'             |
-'BAN_MEMBERS'              |
-'ADMINISTRATOR'            |
-'MANAGE_CHANNELS'          |
-'MANAGE_GUILD'             |
-'ADD_REACTIONS'            |
-'VIEW_AUDIT_LOG'           |
-'PRIORITY_SPEAKER'         |
-'STREAM'                   |
-'VIEW_CHANNEL'             |
-'SEND_MESSAGES'            |
-'SEND_TTS_MESSAGES'        |
-'MANAGE_MESSAGES'          |
-'ATTACH_FILES'             |
-'READ_MESSAGE_HISTORY'     |
-'MENTION_EVERYONE'         |
-'USE_EXTERNAL_EMOJIS'      |
-'VIEW_GUILD_INSIGHTS'      |
-'CONNECT'                  |
-'MUTE_MEMBERS'             |
-'DEAFEN_MEMBERS'           |
-'MOVE_MEMBERS'             |
-'USE_VAD'                  |
-'CHANGE_NICKNAME'          |
-'MANAGE_NICKNAMES'         |
-'MANAGE_ROLES'             |
-'MANAGE_WEBHOOKS'          |
-'MANAGE_EMOJIS'            |
-'USE_APPLICATION_COMMANDS' |
-'REQUEST_TO_SPEAK'         |
-'MANAGE_THREADS'           |
-'USE_PUBLIC_THREADS'       |
-'USE_PRIVATE_THREADS'      |
-'ALL'
 
 const FLAGS = {
   CREATE_INSTANT_INVITE: 1n << 0n,
@@ -78,6 +41,8 @@ const FLAGS = {
 
 FLAGS.ALL = Object.values(FLAGS).reduce((a, p) => a | p, 0n)
 
+type Flags = keyof (typeof FLAGS)
+
 class Permissions {
   allow: bigint
   deny: bigint
@@ -89,7 +54,7 @@ class Permissions {
     this.deny = typeof deny !== 'bigint' ? BigInt(deny) : deny
   }
 
-  has (permission: FLAGSTYPE | bigint, checkAdm?: boolean) {
+  has (permission: Flags | bigint, checkAdm?: boolean) {
     if (typeof permission === 'string') {
       return (checkAdm && this.hasPermission(Permissions.FLAGS.ADMINISTRATOR)) || this.hasPermission(Permissions.FLAGS[permission])
     } else {

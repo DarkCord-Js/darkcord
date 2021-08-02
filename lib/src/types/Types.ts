@@ -1,4 +1,6 @@
+import { Events } from '../constants/Events'
 import type Embed from '../structures/Embed'
+import Intents from '../util/Intents'
 import type { MessageOptions } from './Interfaces'
 
 export type bit = string | number | bigint | object | any[];
@@ -8,9 +10,9 @@ export type video = { url: string; proxyURL?: string; height?: number; width?: n
 export type author = { name: string; iconURL?: string; url?: string, proxyURL?: string } | null;
 export type provider = { name: string; url?: string } | null;
 export type footer = { text: string; iconURL?: string } | null;
-export type EventNoResolvable = 'DEBUG' | 'READY' | 'MESSAGE_CREATE' | 'MESSAGE_REACTION_ADD' | 'MESSAGE_REACTION_REMOVE' | 'HELLO' | 'GUILD_BAN_ADD' | 'GUILD_BAN_REMOVE' | 'GUILD_CREATE' | 'GUILD_DELETE' | 'SHARD_READY' | 'INTERACTION_CREATE';
+export type EventNoResolvable = keyof (typeof Events);
 export type EventResolvable = 'ready' | 'message' | 'reaction' | 'reactionRemove' | 'hello' | 'interaction' | 'guildCreate' | 'guildDelete' | 'guildBan' | 'messageUpdate' | 'guildBanRemove';
-export type IntentsType = 'GUILDS' | 'GUILD_MEMBERS' | 'GUILD_BANS' | 'GUILD_EMOJIS' | 'GUILD_INTEGRATIONS' | 'GUILD_WEBHOOKS' | 'GUILD_INVITES' | 'GUILD_VOICE_STATES' | 'GUILD_PRESENCES' | 'GUILD_MESSAGES' | 'GUILD_MESSAGE_REACTIONS' | 'GUILD_MESSAGE_TYPING' | 'DIRECT_MESSAGES' | 'DIRECT_MESSAGE_REACTIONS' | 'DIRECT_MESSAGE_TYPING' | 'ALL';
+export type IntentsType = keyof (typeof Intents)
 export type ImageFormat = 'png' | 'jpeg' | 'jpg' | 'webp' | 'gif';
 export type CacheTypes = 'channels' | 'users' | 'guilds' | 'emojis';
 export type MessageContent = string | MessageOptions | Embed;

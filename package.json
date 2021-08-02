@@ -7,7 +7,7 @@
     "dev": "rm -r dist && yarn dev:babel && yarn dev:declare && node dist/index.test.js",
     "dev:declare": "tsc --emitDeclarationOnly",
     "dev:babel": "babel . --extensions \".js,.ts\" --out-dir dist",
-    "test": "npx tsc && node dist/index.test"
+    "test": "tsc && node dist/index.test"
   },
   "keywords": [],
   "author": "",

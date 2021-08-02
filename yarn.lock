@@ -1654,7 +1654,7 @@ erela.js@^2.3.3:
 
 erlpack@^0.1.3:
   version "0.1.3"
-  resolved "https://registry.npmjs.org/erlpack/-/erlpack-0.1.3.tgz"
+  resolved "https://registry.yarnpkg.com/erlpack/-/erlpack-0.1.3.tgz#f6cd2a0d5b2f9d054b310c1dda98f60744b9f857"
   integrity sha512-QeG9v8CVsY/a/IoQi8zjn23aYKcziOihAxwjUl3tI/KB4R1FjTtctDAAMovgtpC16S+WiOauers2oWwIOQtKBQ==
   dependencies:
     bindings "^1.5.0"
