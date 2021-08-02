@@ -1,4 +1,4 @@
-import { CreateInviteOptions, MessageOptions, TextBasedChannel } from '../../types/Interfaces'
+import { MessageOptions, TextBasedChannel } from '../../types/Interfaces'
 import GuildChannel from './GuildChannel'
 import type Guild from '../Guild'
 import type { ChannelTypeDef, MessageContent } from '../../types/Types'
@@ -54,17 +54,6 @@ class TextChannel extends GuildChannel implements TextBasedChannel {
 
     public get bot (): Bot {
       return this._bot
-    }
-
-    public async createInvite (options?: CreateInviteOptions) {
-      const optionsResolvable = {
-        max_age: options?.maxAge,
-        mas_uses: options?.maxUses,
-        unique: options?.unique,
-        temporary: options?.temporary
-      }
-
-      const res = await this.bot.requestHandler('POST', `${EndPoints.channels}/${this.id}/${EndPoints.invites}`, optionsResolvable)
     }
 
     public async sendMessage (content: MessageContent) {

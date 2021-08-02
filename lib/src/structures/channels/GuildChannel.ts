@@ -3,6 +3,8 @@ import type Guild from '../Guild'
 import type { ChannelTypeDef } from '../../types/Types'
 import BaseChannel from './BaseChannel'
 import { EndPoints } from '../../constants/Constants'
+import { CreateInviteOptions } from '../../types/Interfaces'
+import Resolve from '../../util/Resolve'
 
 class GuildChannel extends BaseChannel {
   constructor (
@@ -72,6 +74,30 @@ class GuildChannel extends BaseChannel {
     } else {
       await this.bot.requestHandler('DELETE', `${EndPoints.channels}/${this.id}`)
     }
+  }
+
+  public async createInvite (options?: CreateInviteOptions) {
+    const optionsResolvable = {
+      max_age: options?.maxAge,
+      mas_uses: options?.maxUses,
+      unique: options?.unique,
+      temporary: options?.temporary
+    }
+
+    const res = await this.bot.requestHandler('POST', `${EndPoints.channels}/${this.id}/${EndPoints.invites}`, optionsResolvable)
+
+    const resolve = new Resolve(this.bot)
+
+    const channel = await resolve.resolveChannel(await this.bot.rest.fetch.channel(this.id))
+    const invite = {
+      code: res.code,
+      approximatePresenceCount: res.approximate_presence_count,
+      approximateMemberCount: res.approximate_member_count,
+      inviter: resolve.resolveUser(res.inviter),
+      channel
+    }
+
+    return invite
   }
 }
 
