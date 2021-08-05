@@ -2,9 +2,10 @@ import { Constants, EndPoints } from '../constants/Constants'
 import { headers } from '../constants/PayLoads'
 import fetch from 'node-fetch'
 import Bot from '../Bot'
+import Webhook from '../WebHook'
 
 class Fetch {
-  constructor (public bot: Bot) {}
+  constructor (public bot: Bot | Webhook) {}
 
   async user (id: string): Promise<any> {
     return this.bot.requestHandler('GET', `${EndPoints.users}/${id}`)

@@ -17,6 +17,8 @@ class EventHandler {
 
   async message () {
     const message = await this.resolve.resolveMessage(this.payload)
+
+    if (!message?.author) return
     this.bot.emit(Events.MESSAGE_CREATE, message)
   }
 

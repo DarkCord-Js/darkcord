@@ -4,12 +4,13 @@ import type { API_ChannelCreate, MessageOptions } from '../types/Interfaces'
 import { Constants, EndPoints } from '../constants/Constants'
 import Fetch from './Fetch'
 import { requestTypes } from '../types/Types'
+import Webhook from '../WebHook'
 
 class RestAPI {
     private _token: string = '';
     public fetch: Fetch;
     private requestHandler: (method: requestTypes, endpoint: string, data?: any) => Promise<any>
-    constructor (private bot: Bot) {
+    constructor (private bot: Bot | Webhook) {
       this._token = ''
       this.fetch = new Fetch(this.bot)
 

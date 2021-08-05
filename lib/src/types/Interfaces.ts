@@ -176,6 +176,7 @@ export interface MessageOptions {
     embeds?: any[];
     tts?: boolean;
     components?: any[];
+    file?: any
     messageReference?: {
         channelId: string;
         messageId: string;
